@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,6 +17,7 @@ class CommandeServiceTest {
     private static final String ID_GROS_CLIENT = "2COM";
     private static final String VILLE_PETIT_CLIENT = "Berlin";
     private static final BigDecimal REMISE_POUR_GROS_CLIENT = new BigDecimal("0.15");
+    private static final Integer COMMANDE_PAS_ENCORE_LIVREE = 99998;
 
     @Autowired
     private CommandeService service;
@@ -40,5 +42,13 @@ class CommandeServiceTest {
         var commande = service.creerCommande(ID_PETIT_CLIENT);
         assertEquals(VILLE_PETIT_CLIENT, commande.getAdresseLivraison().getVille(),
             "On doit recopier l'adresse du client dans l'adresse de livraison");
-    }   
+    }
+
+    @Test
+    void testEnregidtrementExpedition() {
+        var commande = service.enregistreExpédition(COMMANDE_PAS_ENCORE_LIVREE);
+        assertEquals(commande.getEnvoyeele(), LocalDate.now());
+        assertEquals(commande.getLignes().get(0).getProduit().getUnitesEnStock(), 1);
+    }
+
 }

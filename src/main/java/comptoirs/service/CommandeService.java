@@ -1,6 +1,8 @@
 package comptoirs.service;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Service;
 
@@ -63,7 +65,19 @@ public class CommandeService {
      */
     @Transactional
     public Commande enregistreExpédition(Integer commandeNum) {
-        // TODO : implémenter ce service métier
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        // On vérifie que la commande existe
+        var commande = commandeDao.findById(commandeNum).orElseThrow();
+        // On vérifie que la commande n'est pas déjà envoyée
+        if(commande.getEnvoyeele() != null) {
+            throw new IllegalStateException(("La commande a déjà été expédiée"));
+        }
+        //On met à jour la date d'expédition avec la date du jour
+        commande.setEnvoyeele(LocalDate.now());
+        //Pour chaque produit commandé, on décrémente la quantité en stock
+        for(var ligne : commande.getLignes()) {
+            var produit = ligne.getProduit();
+            produit.setUnitesEnStock(produit.getUnitesEnStock() - ligne.getQuantite());
+        }
+        return commande;
     }
 }
